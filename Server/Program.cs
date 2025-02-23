@@ -9,6 +9,7 @@ namespace Server
         {
             // запускам сервак в отдельном потоке, чтобы консоль была доступна
             Server server = new Server();
+            var serverTask = server.StartAsync();
 
             string? command;
             // цикл для обработки консольных команд
@@ -19,8 +20,7 @@ namespace Server
                 if (command?.ToLower() == "stop")
                 {
                     // остановка сервера
-                    server.isRunning = false;
-                    Console.WriteLine("Сервер остановлен.");
+                    server.Stop();
                     break;
                 }
                 else

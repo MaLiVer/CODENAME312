@@ -11,35 +11,46 @@ namespace Server
 {
     class Server
     {
-        public static bool isRunning = true;
+        private TcpListener _server;
+        private bool _isRunning;
 
         // конструктор сервера
         public Server()
         {
-            // запускам сервак в отдельном потоке, чтобы консоль была доступна
-            var serverTask = Task.Run(() => RunServerAsync());
+            _server = new TcpListener(IPAddress.Any, 45014);
+            _isRunning = true;
         }
 
-        // поток сервака
-        static async Task RunServerAsync()
+        // метод старта сервака
+        public async Task StartAsync()
         {
             // старт сервака
-            TcpListener server = new TcpListener(IPAddress.Any, 45014);
-            server.Start();
-
+            _server.Start();
             Console.WriteLine("Сервер запущен. Ожидание подключений...");
 
             // ждем подключений клиентов
-            while (isRunning)
+            while (_isRunning)
             {
-                TcpClient client = await server.AcceptTcpClientAsync();
-                var taskClient = RunClientSessionAsync(client);
+                try
+                {
+                    TcpClient tcpClient = await _server.AcceptTcpClientAsync();
+                    Client client = new Client(tcpClient);
+                    var clientTask = client.StartAsync();
+                }
+                catch (Exception ex)
+                {
+                    if (!_isRunning) break;
+                    Console.WriteLine($"Ошибка при подключении клиента: {ex.Message}");
+                }
             }
         }
 
-        static async Task RunClientSessionAsync(TcpClient client)
+        // метод остановки сервера
+        public void Stop()
         {
-
+            _isRunning = false;
+            _server.Stop();
+            Console.WriteLine("Сервер остановлен.");
         }
     }
 }
