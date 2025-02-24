@@ -28,6 +28,7 @@ namespace Server
         public async Task StartAsync()
         {
             Console.WriteLine($"{Name} подключен: {_tcpClient.Client.RemoteEndPoint}");
+            Console.WriteLine($"{Name} подключен: {_tcpClient.Client.RemoteEndPoint}");
 
             try
             {
