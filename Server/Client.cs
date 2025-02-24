@@ -31,7 +31,7 @@ namespace Server
 
             try
             {
-                byte[] buffer = new byte[1024];///ыва
+                byte[] buffer = new byte[1024];
                 int bytesRead;
 
                 while (true)

@@ -25,7 +25,7 @@ namespace Server
                 }
                 else
                 {
-                    Console.WriteLine("Неизвестная команда."); // ntcn
+                    Console.WriteLine("Неизвестная команда.");
                 }
             }
         }

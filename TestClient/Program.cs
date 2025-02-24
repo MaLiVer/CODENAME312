@@ -16,8 +16,8 @@ namespace TestClient
 
             while (true)
             {
-                Console.Write("Введите сообщение: "); // 3454
-                string message = Console.ReadLine(); // 34gfgfg
+                Console.Write("Введите сообщение: ");
+                string message = Console.ReadLine();
 
                 // отправка сообщения серверу
                 byte[] data = Encoding.UTF8.GetBytes(message);
