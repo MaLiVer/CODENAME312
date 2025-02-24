@@ -20,8 +20,8 @@ namespace TestClient
                 string message = Console.ReadLine();
 
                 // отправка сообщения серверу
-                byte[] data = Encoding.UTF8.GetBytes(message);//4
-                await client.GetStream().WriteAsync(data, 0, data.Length);//2
+                byte[] data = Encoding.UTF8.GetBytes(message);//фффф
+                await client.GetStream().WriteAsync(data, 0, data.Length);//4566
             }
         }
     }
