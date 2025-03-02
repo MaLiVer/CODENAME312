@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
+using Server;
 
 namespace TestClient
 {
@@ -14,15 +16,18 @@ namespace TestClient
             client.Connect("127.0.0.1", 45014);
             Console.WriteLine("Подключено!");
 
-            while (true)
-            {
-                Console.Write("Введите сообщение: ");
-                string message = Console.ReadLine();
+            //while (true)
+            //{
+                AuthorizationMassage authMessage = new AuthorizationMassage("user1", "password1");
+                string authJson = JsonSerializer.Serialize(authMessage);
+                byte[] authData = Encoding.UTF8.GetBytes(authJson);
+                Message message = new Message(MessageType.Authorization, authData);
 
                 // отправка сообщения серверу
-                byte[] data = Encoding.UTF8.GetBytes(message);
+                string json = JsonSerializer.Serialize(message);
+                byte[] data = Encoding.UTF8.GetBytes(json);
                 await client.GetStream().WriteAsync(data, 0, data.Length);
-            }
+            //}
         }
     }
 }
