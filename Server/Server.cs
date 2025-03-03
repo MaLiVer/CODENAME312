@@ -25,6 +25,7 @@ namespace Server
             {
                 if (user.Password == password)
                 {
+                    Console.WriteLine("Проверка логина и пароля выполнена");
                     return true;
                 }
             }
