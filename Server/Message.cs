@@ -9,6 +9,7 @@ namespace Server
     public enum MessageType
     {
         Authorization
+        
     }
 
     public class Message

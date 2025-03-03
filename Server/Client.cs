@@ -70,7 +70,7 @@ namespace Server
                     }
 
 
-                    Console.WriteLine($"{Name} отправил: {message}");
+                    //Console.WriteLine($"{Name} отправил: {message}");
 
                     // ответ на клиента
                     //string response = $"Сообщение от {Name}: {message}";

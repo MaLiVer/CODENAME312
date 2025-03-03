@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -26,18 +28,36 @@ namespace TestClient
             client.Connect("127.0.0.1", 45014);
             Console.WriteLine("Подключено!");
 
-            //while (true)
-            //{
-                AuthorizationMassage authMessage = new AuthorizationMassage(login, password);
-                string authJson = JsonSerializer.Serialize(authMessage);
-                byte[] authData = Encoding.UTF8.GetBytes(authJson);
-                Message message = new Message(MessageType.Authorization, authData);
+            // отправляем авторизацию
+            AuthorizationMassage authMessage = new AuthorizationMassage(login, password);
+            string authJson = JsonSerializer.Serialize(authMessage);
+            byte[] authData = Encoding.UTF8.GetBytes(authJson);
+            Message message = new Message(MessageType.Authorization, authData);
+            string json = JsonSerializer.Serialize(message);
+            byte[] data = Encoding.UTF8.GetBytes(json);
+            await client.GetStream().WriteAsync(data, 0, data.Length);
 
-                // отправка сообщения серверу
-                string json = JsonSerializer.Serialize(message);
-                byte[] data = Encoding.UTF8.GetBytes(json);
-                await client.GetStream().WriteAsync(data, 0, data.Length);
-            //}
+            // основной цикл
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while (true)
+            {
+                // чтение данных от клиента
+                bytesRead = await client.GetStream().ReadAsync(buffer, 0, buffer.Length);
+                if (bytesRead == 0) break; // клиент отключился?
+
+                string result = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                Message resultMmessage = JsonSerializer.Deserialize<Message>(json);
+                if (message.Type == MessageType.Authorization)
+                {
+                    
+                }
+                else
+                {
+                    Console.WriteLine("Получено сообщение неизвестного типа.");
+                }
+            }
         }
     }
 }
