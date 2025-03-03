@@ -56,7 +56,13 @@ namespace Server
                         AuthorizationMassage authMessage = JsonSerializer.Deserialize<AuthorizationMassage>(authJson);
 
                         // Обрабатываем данные авторизации
-                        Console.WriteLine($"Получены данные авторизации: Логин = {authMessage.Login}, Пароль = {authMessage.Password}");
+                        //Console.WriteLine($"Получены данные авторизации: Логин = {authMessage.Login}, Пароль = {authMessage.Password}");
+                        //
+                        if (!server.IsUser(authMessage.Login, authMessage.Password)) 
+                        {
+                            _tcpClient.Close();
+                        }
+                            
                     }
                     else
                     {

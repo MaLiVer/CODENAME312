@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 
 namespace Server
 {
@@ -16,6 +17,19 @@ namespace Server
         private bool _isRunning;
         private ConcurrentDictionary<string, Client> _clients; // Словарь для хранения клиентов
         private ConcurrentDictionary<string, User> _users;
+
+        //Проверка логина и пароля
+        public bool IsUser(string login, string password)
+        {
+            if (_users.TryGetValue(login, out User user))
+            {
+                if (user.Password == password)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         // конструктор сервера
         public Server()
