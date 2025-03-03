@@ -8,8 +8,8 @@ namespace Server
 {
     public enum MessageType
     {
-        Authorization
-        
+        Authorization,
+        TextMessage
     }
 
     public class Message
@@ -36,6 +36,19 @@ namespace Server
         {
             Login = login;
             Password = password;
+        }
+    }
+
+    public class TextMessage
+    {
+        public string SendFrom { get; set; }
+        public string SendTo { get; set; }
+        public string Text { get; set; }
+        public TextMessage(string sendFrom, string sendTo, string Text)
+        {
+            SendFrom = sendFrom;
+            SendTo = sendTo;
+            Text = Text;
         }
     }
 }
