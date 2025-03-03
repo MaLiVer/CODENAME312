@@ -10,6 +10,16 @@ namespace TestClient
     {
         static async Task Main(string[] args)
         {
+            // получаем параметры логин и пароль
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Не получены параметры логин и пароль");
+                Console.ReadLine();
+                return;
+            }
+            string login = args[0];
+            string password = args[1];
+
             Console.WriteLine("Подключение к серверу...");
 
             using TcpClient client = new TcpClient();
@@ -18,7 +28,7 @@ namespace TestClient
 
             //while (true)
             //{
-                AuthorizationMassage authMessage = new AuthorizationMassage("user1", "password1");
+                AuthorizationMassage authMessage = new AuthorizationMassage(login, password);
                 string authJson = JsonSerializer.Serialize(authMessage);
                 byte[] authData = Encoding.UTF8.GetBytes(authJson);
                 Message message = new Message(MessageType.Authorization, authData);
