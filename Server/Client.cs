@@ -12,34 +12,57 @@ namespace Server
 {
     class Client
     {
-        private TcpClient _tcpClient;
+        private TcpClient _client;
         private NetworkStream _stream;
 
-        public string Name { get; private set; }
+        public string Login { get; private set; }
         public bool IsOnline { get; private set; } // Статус пользователя
 
         // конструктор клиента
-        public Client(TcpClient tcpClient, string name)
+        public Client(Server server, TcpClient tcpClient)
         {
-            _tcpClient = tcpClient;
+            _client = tcpClient;
             _stream = tcpClient.GetStream();
 
-            Name = name; // Инициализируется переданным именем клиента
-            IsOnline = true; // По умолчанию пользователь онлайн
+            IsOnline = true;
 
+            Message message = GetData();
+            if (message.Type == MessageType.Authorization)
+            {
+                AuthorizationMassage authMessage = AuthorizationMassage.Convert(message.Data);
+
+                if (!server.IsUser(authMessage.Login, authMessage.Password))
+                {
+                    _client.Close();
+                }
+            }
             
         
+        }
+
+        private Message GetData()
+        {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            bytesRead = _stream.Read(buffer, 0, buffer.Length);
+            string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            Message message = JsonSerializer.Deserialize<Message>(json);
+            return message;
         }
 
         // метод для обработки клиента
         public async Task StartAsync(Server server)
         {
-            Console.WriteLine($"{Name} подключен: {_tcpClient.Client.RemoteEndPoint}");
+            Console.WriteLine($"{Login} подключен: {_client.Client.RemoteEndPoint}");
 
             try
             {
                 byte[] buffer = new byte[1024];
                 int bytesRead;
+
+
+
+
 
                 while (true)
                 {
@@ -60,7 +83,7 @@ namespace Server
                         //
                         if (!server.IsUser(authMessage.Login, authMessage.Password)) 
                         {
-                            _tcpClient.Close();
+                            _client.Close();
                         }
                             
                     }
@@ -90,13 +113,13 @@ namespace Server
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"{Name}: Ошибка: {ex.Message}");
+                Console.WriteLine($"{Login}: Ошибка: {ex.Message}");
             }
             finally
             {
                 IsOnline = false; // Статус оффлайн
-                Console.WriteLine($"{Name} отключен.");
-                _tcpClient.Close();
+                Console.WriteLine($"{Login} отключен.");
+                _client.Close();
                 //clients.TryRemove(Name, out _); // Удаляем клиента из словаря
             }
         }

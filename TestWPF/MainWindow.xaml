@@ -1,0 +1,69 @@
+﻿<Window x:Class="TestWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="http://schemas.microsoft.com/winfx/2006/xaml/presentation/shell"
+        Title="MainWindow"
+        Width="800"
+        Height="450"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF1E1E1E"
+        ResizeMode="CanResize"
+        Style="{StaticResource {x:Type Window}}">
+
+    <!-- Основное содержимое окна -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Список клиентов -->
+        <ListBox x:Name="ClientList"
+                 Background="#FF2D2D2D"
+                 Foreground="White"
+                 BorderThickness="0"
+                 Margin="10">
+            <!-- Пример клиентов -->
+            <ListBoxItem>Client 1</ListBoxItem>
+            <ListBoxItem>Client 2</ListBoxItem>
+            <ListBoxItem>Client 3</ListBoxItem>
+        </ListBox>
+
+        <!-- Чат -->
+        <Grid Grid.Column="1" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- История чата -->
+            <ScrollViewer Background="#FF2D2D2D" Padding="10" VerticalScrollBarVisibility="Hidden">
+                <TextBlock x:Name="ChatHistory"
+                           Foreground="White"
+                           TextWrapping="Wrap" />
+            </ScrollViewer>
+
+            <!-- Панель ввода сообщения -->
+            <Grid Grid.Row="1" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="MessageInput"
+                         Background="#FF2D2D2D"
+                         Foreground="White"
+                         BorderThickness="0"
+                         Padding="5" />
+                <Button x:Name="SendButton"
+                        Grid.Column="1"
+                        Content="Отправить"
+                        Background="#FF3E3E3E"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Padding="10,5"
+                        Margin="10,0,0,0" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

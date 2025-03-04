@@ -62,9 +62,9 @@ namespace Server
             {
                 try
                 {
-                    TcpClient tcpClient = await _server.AcceptTcpClientAsync();
-                    Client client = new Client(tcpClient, "Client" + _clients.Count); // Присваиваем имя клиенту
-                    _clients.TryAdd(client.Name, client); // Добавляем клиента в словарь
+                    TcpClient newClient = await _server.AcceptTcpClientAsync();
+                    Client client = new Client(this, newClient);
+                    _clients.TryAdd(client.Login, client); // Добавляем клиента в словарь
                     var clientTask = client.StartAsync(this); // Передаем словарь клиенту
                 }
                 catch (Exception ex)
