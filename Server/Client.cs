@@ -94,7 +94,7 @@ namespace Server
 
                         Console.WriteLine($"сообщение: от - {textMessage.From}, кому - {textMessage.To}, {textMessage.Message}");
 
-                        TcpMessage newMessage = Text.Create(textMessage.To, textMessage.From, textMessage.Message);
+                        TcpMessage newMessage = Text.Create(textMessage.From, textMessage.To, textMessage.Message);
                         server.SendMessage(textMessage.To, newMessage);
                     }
                 }

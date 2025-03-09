@@ -52,7 +52,8 @@
                          Background="#FF2D2D2D"
                          Foreground="White"
                          BorderThickness="0"
-                         Padding="5" />
+                         Padding="5"
+                         KeyDown="MessageInput_KeyDown"/>
                 <Button x:Name="SendButton"
                         Grid.Column="1"
                         Content="Отправить"

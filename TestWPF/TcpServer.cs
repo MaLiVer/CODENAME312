@@ -90,7 +90,7 @@ namespace TestWPF
         }
 
         // метод постоянного получения новых сообщений
-        private async Task ReceiveMessagesAsync()
+        private void ReceiveMessagesAsync()
         {
             while (true)
             {
@@ -110,7 +110,7 @@ namespace TestWPF
                     {
                         if (client.Login == textMessage.From)
                         {
-                            client.ChatHistory += $"{textMessage.From}: {message}\n";
+                            client.ChatHistory += $"{textMessage.From}: {textMessage.Message}\n";
                             ClientsUpdated(_clientChats);
                         }
                     }
@@ -131,19 +131,19 @@ namespace TestWPF
         {
             foreach (var user in onlineUsersMessage.Users)
             {
-                var existingChat = _clientChats.FirstOrDefault(chat => chat.Login == user);
+                if (_login != user)
+                {
+                    var existingChat = _clientChats.FirstOrDefault(chat => chat.Login == user);
 
-                if (existingChat == null)
-                {
-                    // Если записи нет, добавляем новую
-                    _clientChats.Add(new ClientChats
+                    if (existingChat == null)
                     {
-                        Login = user,
-                        ChatHistory = string.Empty
-                    });
-                }
-                else
-                {
+                        // Если записи нет, добавляем новую
+                        _clientChats.Add(new ClientChats
+                        {
+                            Login = user,
+                            ChatHistory = string.Empty
+                        });
+                    }
                 }
             }
             _clientChats.RemoveAll(chat => !onlineUsersMessage.Users.Contains(chat.Login));

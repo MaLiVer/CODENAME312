@@ -57,7 +57,8 @@ namespace Server
                     if (client.IsAuthorization)
                     {
                         _clients.TryAdd(client.Login, client); // Добавляем клиента в словарь
-                        client.Start(this);
+                        SendOnlineUsers(client.Login);
+                        Task task = Task.Run(() => client.Start(this));
                     }
                 }
                 catch (Exception ex)
@@ -110,6 +111,22 @@ namespace Server
         public List<string> GetOnlineUsers()
         {
             return _clients.Values.Select(client => client.Login).ToList();
+
+            string[] Result;
+
+        }
+
+        public void SendOnlineUsers(string newClient)
+        {
+            TcpMessage OnlineUsersMessage = OnlineUsers.Create(GetOnlineUsers());
+            foreach (var client in _clients)
+            {
+                if(client.Value.Login != newClient)
+                {
+                    client.Value.Send(OnlineUsersMessage);
+                }
+                
+            }
         }
     }
 }

@@ -44,6 +44,9 @@ public partial class MainWindow : Window
         _tcpServer = new TcpServer();
         _tcpServer.ClientsUpdated += OnClientsUpdated;
         _tcpServer.ConnectToServerAsync(login, password);
+
+        SendButton.IsEnabled = false;
+        MessageInput.IsEnabled = false;
     }
 
     // обновление списка клиентов и чатов
@@ -82,6 +85,18 @@ public partial class MainWindow : Window
                     Clients.Add(new ClientChats { Login = newClient.Login, ChatHistory = newClient.ChatHistory });
                 }
             }
+
+            _selectedClient = ClientList.SelectedItem as ClientChats;
+            if (_selectedClient != null)
+            {
+                foreach (var clientChat in _tcpServer._clientChats)
+                {
+                    if (clientChat.Login == _selectedClient.Login)
+                    {
+                        ChatHistory.Text = clientChat.ChatHistory;
+                    }
+                }
+            }
         });
     }
 
@@ -91,8 +106,16 @@ public partial class MainWindow : Window
         _selectedClient = ClientList.SelectedItem as ClientChats;
         if (_selectedClient != null)
         {
-            ChatHistory.Text = _selectedClient.ChatHistory;
+            foreach (var clientChat in _tcpServer._clientChats)
+            {
+                if (clientChat.Login == _selectedClient.Login)
+                {
+                    ChatHistory.Text = clientChat.ChatHistory;
+                }
+            }
         }
+        SendButton.IsEnabled = true;
+        MessageInput.IsEnabled = true;
     }
 
     // кнопка "Отправить"
@@ -101,10 +124,29 @@ public partial class MainWindow : Window
         if (_selectedClient != null && !string.IsNullOrEmpty(MessageInput.Text))
         {
             string message = MessageInput.Text;
-            _selectedClient.ChatHistory += $"Я: {message}\n";
+
+            foreach (var clientChat in _tcpServer._clientChats)
+            {
+                if (clientChat.Login == _selectedClient.Login)
+                {
+                    clientChat.ChatHistory += $"Я: {message}\n";
+                    ChatHistory.Text += $"Я: {message}\n";
+                }
+            }
             _tcpServer.Send(_selectedClient.Login, message);
-            ChatHistory.Text = _selectedClient.ChatHistory;
+
             MessageInput.Clear();
+        }
+    }
+
+    private void MessageInput_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            // Вызов события Click для кнопки
+            SendButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+            e.Handled = true;
         }
     }
 }
