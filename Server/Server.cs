@@ -68,6 +68,14 @@ namespace Server
             }
         }
 
+        //
+        public void DeleteClient(string login)
+        {
+            _clients.TryRemove(login, out _);
+
+
+        }
+
         // метод остановки сервера
         public void Stop()
         {

@@ -20,7 +20,11 @@ namespace TestWPF;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public ObservableCollection<string> Clients { get; set; } = new ObservableCollection<string>();
+    public ObservableCollection<ClientChats> Clients { get; set; } = new ObservableCollection<ClientChats>();
+
+    private ClientChats _selectedClient;
+
+    TcpServer _tcpServer;
 
     public MainWindow()
     {
@@ -37,31 +41,73 @@ public partial class MainWindow : Window
         string password = App.CommandLineArgs[1];
 
         // создаем класс server
-        TcpServer tcpServer = new TcpServer();
-        tcpServer.ClientsUpdated += OnClientsUpdated;
-        tcpServer.ConnectToServerAsync(login, password);
+        _tcpServer = new TcpServer();
+        _tcpServer.ClientsUpdated += OnClientsUpdated;
+        _tcpServer.ConnectToServerAsync(login, password);
     }
 
-    private void OnClientsUpdated(List<string> clients)
+    // обновление списка клиентов и чатов
+    private void OnClientsUpdated(List<ClientChats> updatedClients)
     {
-        // Обновляем список клиентов в UI через Dispatcher
         Application.Current.Dispatcher.Invoke(() =>
         {
-            Clients.Clear();
-            foreach (var client in clients)
+            // Получаем логины текущих клиентов
+            var existingClientLogins = Clients.Select(c => c.Login).ToList();
+
+            // Получаем логины обновленных клиентов
+            var updatedClientLogins = updatedClients.Select(c => c.Login).ToList();
+
+            // Находим клиентов, которые больше не в списке
+            var removedClientLogins = existingClientLogins.Except(updatedClientLogins).ToList();
+
+            // Удаляем клиентов, которые больше не в списке
+            foreach (var login in removedClientLogins)
             {
-                Clients.Add(client);
+                var clientToRemove = Clients.FirstOrDefault(c => c.Login == login);
+                if (clientToRemove != null)
+                {
+                    Clients.Remove(clientToRemove);
+                }
+            }
+
+            // Находим клиентов, которые новые в списке
+            var newClientLogins = updatedClientLogins.Except(existingClientLogins).ToList();
+
+            // Добавляем новых клиентов
+            foreach (var login in newClientLogins)
+            {
+                var newClient = updatedClients.FirstOrDefault(c => c.Login == login);
+                if (newClient != null)
+                {
+                    Clients.Add(new ClientChats { Login = newClient.Login, ChatHistory = newClient.ChatHistory });
+                }
             }
         });
     }
 
+    // при выборе мышкой другого чата
+    private void ClientList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _selectedClient = ClientList.SelectedItem as ClientChats;
+        if (_selectedClient != null)
+        {
+            ChatHistory.Text = _selectedClient.ChatHistory;
+        }
+    }
+
+    // кнопка "Отправить"
     private void SendButton_Click(object sender, RoutedEventArgs e)
     {
-        string message = MessageInput.Text;
-        if (!string.IsNullOrEmpty(message))
+        if (_selectedClient != null && !string.IsNullOrEmpty(MessageInput.Text))
         {
-            ChatHistory.Text += $"You: {message}\n";
+            string message = MessageInput.Text;
+            _selectedClient.ChatHistory += $"Я: {message}\n";
+            _tcpServer.Send(_selectedClient.Login, message);
+            ChatHistory.Text = _selectedClient.ChatHistory;
             MessageInput.Clear();
+
+            // Отправка сообщения на сервер (реализуйте эту часть в зависимости от вашего протокола)
+            // Например: _tcpServer.SendMessage(_selectedClient.Login, message);
         }
     }
 }

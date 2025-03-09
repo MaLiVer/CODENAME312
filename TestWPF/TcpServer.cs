@@ -12,19 +12,30 @@ using System.Windows;
 
 namespace TestWPF
 {
+    public class ClientChats
+    {
+        public string Login { get; set; }
+        public string ChatHistory { get; set; }
+    }
+
     public class TcpServer
     {
         private TcpClient? _server;
         private NetworkStream? _stream;
+        private string _login;
+
+        public List<ClientChats> _clientChats;
 
         public bool IsAuthorization { get; private set; }
 
-        public event Action<List<string>> ClientsUpdated;
+        public event Action<List<ClientChats>> ClientsUpdated;
 
         // метод подключения к серверу
         public async Task ConnectToServerAsync(string login, string password)
         {
+            _login = login;
             _server = new TcpClient();
+            _clientChats = new List<ClientChats>();
             
             // цикл подключения к серверу
             while (!_server.Connected)
@@ -88,15 +99,57 @@ namespace TestWPF
                 if(message.Type == MessageType.OnlineUsers)
                 {
                     OnlineUsers onlineUsersMessage = OnlineUsers.ConvertToObject(message.Data);
-                    ClientsUpdated?.Invoke(onlineUsersMessage.Users);
-
+                    UpdateClientChats(onlineUsersMessage);
                 }
 
                 if (message.Type == MessageType.Text)
                 {
                     Text textMessage = Text.ConvertToObject(message.Data);
+
+                    foreach (var client in _clientChats)
+                    {
+                        if (client.Login == textMessage.From)
+                        {
+                            client.ChatHistory += $"{textMessage.From}: {message}\n";
+                            ClientsUpdated(_clientChats);
+                        }
+                    }
                 }
             }
+        }
+
+        // отправить сообщение
+        public void Send(string to, string text)
+        {
+            TcpMessage status = Text.Create(_login, to, text);
+            byte[] data = TcpMessage.ConvertToByte(status);
+            _stream.WriteAsync(data, 0, data.Length);
+        }
+
+        // обновление списка чатов клиентов
+        public void UpdateClientChats(OnlineUsers onlineUsersMessage)
+        {
+            foreach (var user in onlineUsersMessage.Users)
+            {
+                var existingChat = _clientChats.FirstOrDefault(chat => chat.Login == user);
+
+                if (existingChat == null)
+                {
+                    // Если записи нет, добавляем новую
+                    _clientChats.Add(new ClientChats
+                    {
+                        Login = user,
+                        ChatHistory = string.Empty
+                    });
+                }
+                else
+                {
+                }
+            }
+            _clientChats.RemoveAll(chat => !onlineUsersMessage.Users.Contains(chat.Login));
+
+            // вызываем экшон
+            ClientsUpdated(_clientChats);
         }
     }
 }

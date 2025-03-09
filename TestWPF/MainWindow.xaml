@@ -22,7 +22,9 @@
                  Background="#FF2D2D2D"
                  Foreground="White"
                  BorderThickness="0"
-                 Margin="10">
+                 Margin="10"
+                 DisplayMemberPath="Login"
+                 SelectionChanged="ClientList_SelectionChanged">
         </ListBox>
 
         <!-- Чат -->
@@ -58,7 +60,8 @@
                         Foreground="White"
                         BorderThickness="0"
                         Padding="10,5"
-                        Margin="10,0,0,0" />
+                        Margin="10,0,0,0"
+                        Click="SendButton_Click"/>
             </Grid>
         </Grid>
     </Grid>

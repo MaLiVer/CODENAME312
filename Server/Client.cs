@@ -59,7 +59,6 @@ namespace Server
                 Console.WriteLine("- отправлен ERROR");
 
                 _client.Close();
-                // нужно дописать
             }
         }
 
@@ -76,7 +75,7 @@ namespace Server
         // метод для работы с клиентом
         public async Task Start(Server server)
         {
-            Console.WriteLine($"{Login} подключен: {_client.Client.RemoteEndPoint}");
+            Console.WriteLine($"{Login} подключен - {_client.Client.RemoteEndPoint}");
 
             try
             {
@@ -92,6 +91,9 @@ namespace Server
                     if (message.Type == MessageType.Text)
                     {
                         Text textMessage = Text.ConvertToObject(message.Data);
+
+                        Console.WriteLine($"сообщение: от - {textMessage.From}, кому - {textMessage.To}, {textMessage.Message}");
+
                         TcpMessage newMessage = Text.Create(textMessage.To, textMessage.From, textMessage.Message);
                         server.SendMessage(textMessage.To, newMessage);
                     }
@@ -99,7 +101,10 @@ namespace Server
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"{Login}: Ошибка: {ex.Message}");
+                Console.WriteLine($"{Login} отключен");
+
+                _client.Close();
+                server.DeleteClient(this.Login);
             }
         }
 

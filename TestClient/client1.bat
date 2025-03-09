@@ -1,1 +1,0 @@
-TestClient.exe user1 password1

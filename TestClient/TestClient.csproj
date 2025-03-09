@@ -11,13 +11,4 @@
     <ProjectReference Include="..\Server\Server.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="client1.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="client2.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
