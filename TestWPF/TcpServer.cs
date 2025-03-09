@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Server;
+using System.Windows;
 
 namespace TestWPF
 {
@@ -15,6 +16,10 @@ namespace TestWPF
     {
         private TcpClient? _server;
         private NetworkStream? _stream;
+
+        public bool IsAuthorization { get; private set; }
+
+        public event Action<List<string>> ClientsUpdated;
 
         // метод подключения к серверу
         public async Task ConnectToServerAsync(string login, string password)
@@ -30,7 +35,6 @@ namespace TestWPF
                     if (_server.Connected)
                     {
                         _stream = _server.GetStream();
-                        Task task = Task.Run(() => ReceiveMessagesAsync());
                         break;
                     }
                 }
@@ -39,32 +43,58 @@ namespace TestWPF
                 }
             }
 
-            // авторизация
-            Server.Message authMessage = AuthorizationMassage.Create(login, password);
-            string json = JsonSerializer.Serialize(authMessage);
-            byte[] data = Encoding.UTF8.GetBytes(json);
+            // 1. отправляем запрос авторизации
+            TcpMessage authMessage = Authorization.Create(login, password);
+            byte[] data = TcpMessage.ConvertToByte(authMessage);
             await _stream.WriteAsync(data, 0, data.Length);
 
+            // 2. принять результат
+            TcpMessage message = GetData();
+            if (message.Type == MessageType.AuthorizationStatus)
+            {
+                AuthorizationStatus authStatusMessage = AuthorizationStatus.ConvertToObject(message.Data);
+                if (authStatusMessage.Status == "OK")
+                {
+                    IsAuthorization = true;
+                }
+            }
 
+            // запускаем отдельный процесс для получения сообщений
+            if (IsAuthorization)
+            {
+                Task task = Task.Run(() => ReceiveMessagesAsync());
+            }
+            
+        }
+
+        // вспомогательный метод. Получить данные
+        private TcpMessage GetData()
+        {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            bytesRead = _stream.Read(buffer, 0, buffer.Length);
+            string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            TcpMessage message = JsonSerializer.Deserialize<TcpMessage>(json);
+            return message;
         }
 
         // метод постоянного получения новых сообщений
         private async Task ReceiveMessagesAsync()
         {
-            byte[] buffer = new byte[1024];
             while (true)
             {
-                try
+                TcpMessage message = GetData();
+
+                if(message.Type == MessageType.OnlineUsers)
                 {
-                    int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (bytesRead > 0)
-                    {
-                        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    }
+                    OnlineUsers onlineUsersMessage = OnlineUsers.ConvertToObject(message.Data);
+                    ClientsUpdated?.Invoke(onlineUsersMessage.Users);
+
                 }
-                catch (Exception ex)
+
+                if (message.Type == MessageType.Text)
                 {
-                    break;
+                    Text textMessage = Text.ConvertToObject(message.Data);
                 }
             }
         }

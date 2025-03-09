@@ -23,10 +23,6 @@
                  Foreground="White"
                  BorderThickness="0"
                  Margin="10">
-            <!-- Пример клиентов -->
-            <ListBoxItem>Client 1</ListBoxItem>
-            <ListBoxItem>Client 2</ListBoxItem>
-            <ListBoxItem>Client 3</ListBoxItem>
         </ListBox>
 
         <!-- Чат -->

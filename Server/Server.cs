@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
+using System.IO;
 
 namespace Server
 {
@@ -17,20 +18,6 @@ namespace Server
         private bool _isRunning;
         private ConcurrentDictionary<string, Client> _clients; // Словарь для хранения клиентов
         private ConcurrentDictionary<string, User> _users;
-
-        //Проверка логина и пароля
-        public bool IsUser(string login, string password)
-        {
-            if (_users.TryGetValue(login, out User user))
-            {
-                if (user.Password == password)
-                {
-                    Console.WriteLine("Проверка логина и пароля выполнена");
-                    return true;
-                }
-            }
-            return false;
-        }
 
         // конструктор сервера
         public Server()
@@ -62,10 +49,16 @@ namespace Server
             {
                 try
                 {
-                    TcpClient newClient = await _server.AcceptTcpClientAsync();
-                    Client client = new Client(this, newClient);
-                    _clients.TryAdd(client.Login, client); // Добавляем клиента в словарь
-                    var clientTask = client.StartAsync(this); // Передаем словарь клиенту
+                    TcpClient newConnectClient = await _server.AcceptTcpClientAsync();
+
+                    Client client = new Client(newConnectClient);
+                    client.Auth(this);
+
+                    if (client.IsAuthorization)
+                    {
+                        _clients.TryAdd(client.Login, client); // Добавляем клиента в словарь
+                        client.Start(this);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -75,15 +68,40 @@ namespace Server
             }
         }
 
-        
-
-
         // метод остановки сервера
         public void Stop()
         {
             _isRunning = false;
             _server.Stop();
             Console.WriteLine("Сервер остановлен.");
+        }
+
+        // проверка логина и пароля
+        public bool IsUser(string login, string password)
+        {
+            if (_users.TryGetValue(login, out User user))
+            {
+                if (user.Password == password)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // метод отправки сообщения
+        public void SendMessage(string to, TcpMessage tcpMessage)
+        {
+            if (_clients.TryGetValue(to, out Client client))
+            {
+                client.Send(tcpMessage);
+            }
+        }
+
+        // получить список всех клиентов
+        public List<string> GetOnlineUsers()
+        {
+            return _clients.Values.Select(client => client.Login).ToList();
         }
     }
 }

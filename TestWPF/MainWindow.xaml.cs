@@ -1,4 +1,5 @@
 ﻿using Dark.Net;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -19,8 +20,7 @@ namespace TestWPF;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private TcpClient _client;
-    private NetworkStream _stream;
+    public ObservableCollection<string> Clients { get; set; } = new ObservableCollection<string>();
 
     public MainWindow()
     {
@@ -29,6 +29,7 @@ public partial class MainWindow : Window
 
         // штатные строки
         InitializeComponent();
+        ClientList.ItemsSource = Clients;
         SendButton.Click += SendButton_Click;
 
         // параметры командрой строки для теста
@@ -37,7 +38,21 @@ public partial class MainWindow : Window
 
         // создаем класс server
         TcpServer tcpServer = new TcpServer();
+        tcpServer.ClientsUpdated += OnClientsUpdated;
         tcpServer.ConnectToServerAsync(login, password);
+    }
+
+    private void OnClientsUpdated(List<string> clients)
+    {
+        // Обновляем список клиентов в UI через Dispatcher
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            Clients.Clear();
+            foreach (var client in clients)
+            {
+                Clients.Add(client);
+            }
+        });
     }
 
     private void SendButton_Click(object sender, RoutedEventArgs e)

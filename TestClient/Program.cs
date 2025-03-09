@@ -29,10 +29,10 @@ namespace TestClient
             Console.WriteLine("Подключено!");
 
             // отправляем авторизацию
-            AuthorizationMassage authMessage = new AuthorizationMassage(login, password);
+            Authorization authMessage = new Authorization(login, password);
             string authJson = JsonSerializer.Serialize(authMessage);
             byte[] authData = Encoding.UTF8.GetBytes(authJson);
-            Message message = new Message(MessageType.Authorization, authData);
+            TcpMessage message = new TcpMessage(MessageType.Authorization, authData);
             string json = JsonSerializer.Serialize(message);
             byte[] data = Encoding.UTF8.GetBytes(json);
             await client.GetStream().WriteAsync(data, 0, data.Length);
@@ -48,7 +48,7 @@ namespace TestClient
 
                 string result = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                Message resultMmessage = JsonSerializer.Deserialize<Message>(json);
+                TcpMessage resultMmessage = JsonSerializer.Deserialize<TcpMessage>(json);
                 if (message.Type == MessageType.Authorization)
                 {
                     
