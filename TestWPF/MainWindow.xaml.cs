@@ -105,9 +105,6 @@ public partial class MainWindow : Window
             _tcpServer.Send(_selectedClient.Login, message);
             ChatHistory.Text = _selectedClient.ChatHistory;
             MessageInput.Clear();
-
-            // Отправка сообщения на сервер (реализуйте эту часть в зависимости от вашего протокола)
-            // Например: _tcpServer.SendMessage(_selectedClient.Login, message);
         }
     }
 }
